@@ -53,6 +53,8 @@ while True:
         resource = ckan.action.resource_create(package_id=package['id'],
                                             name='test-datastore-resource',
                                             url='foo')
+        package['resources'] = []
+        package['resources'].append(resource)
         print 'Creating data'
         data = ckan.action.datastore_create(resource_id=resource['id'],
                                             fields=fields, records=records,
