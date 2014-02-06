@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+#chart div {
+  font: 10px sans-serif;
+  background-color: steelblue;
+  text-align: right;
+  padding: 3px;
+  margin: 1px;
+  color: white;
+}
+
+</style>
+
+<div style="width:50%; margin-left:auto; margin-right:auto; padding-top:5em;">
+  <h3>Random numbers</h3>
+  <div id="chart"></div>
+</div>
+
+<script src="d3.v3.min.js"></script>
+<script src="jquery-1.10.2.min.js"></script>
+<script>
+
+$.ajax({
+  url: "http://127.0.0.1:5000/api/3/action/package_show?id=test-datastore-package",
+  success: function(response) {
+    var resource_id = response.result.resources[0].id;
+    get_data_first_time(resource_id);
+
+    var  call_get_data_with_resource_id = function() {
+      get_data_next_time(resource_id);
+    };
+
+    window.setInterval(call_get_data_with_resource_id, 5000);
+  }
+});
+
+var get_data_first_time = function(resource_id){
+  $.ajax({
+    url: "http://127.0.0.1:5000/api/3/action/datastore_search",
+    data: {
+      "resource_id": resource_id
+    },
+    success: function(response) {
+      var data = [];
+
+      response.result.records.forEach(function(record) {
+        data.push(record.y);
+      });
+
+      var x = d3.scale.linear()
+          .domain([0, d3.max(data)])
+          .range([0, 420]);
+
+      d3.select("#chart")
+        .selectAll("div")
+          .data(data)
+        .enter().append("div")
+          .style("float", "left")
+          .style("width", "20px")
+          .style("height", function(d) { return x(d) + "px"; });
+    }
+  });
+};
+
+var get_data_next_time = function(resource_id){
+  $.ajax({
+    url: "http://127.0.0.1:5000/api/3/action/datastore_search",
+    data: {
+      "resource_id": resource_id
+    },
+    success: function(response) {
+      var data = [];
+
+      response.result.records.forEach(function(record) {
+        data.push(record.y);
+      });
+
+      var x = d3.scale.linear()
+          .domain([0, d3.max(data)])
+          .range([0, 420]);
+
+      d3.select("#chart")
+        .selectAll("div")
+          .data(data)
+          .transition()
+          .style("height", function(d) { return x(d) + "px"; });
+    }
+  });
+};
+</script>
